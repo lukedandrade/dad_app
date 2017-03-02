@@ -309,9 +309,9 @@ Builder.load_string('''
             size_hint_y: None
             height: "40dp"
             Button:
-                text: "Atualizar ListView"
+                text: "Mostrar Detalhes"
                 size: self.texture_size
-                on_press: root.update_list()
+                on_press: root.entry_details()
             Button:
                 text: "Deletar Entrada"
                 size: self.texture_size
@@ -462,15 +462,27 @@ class ScreenFour(Screen):
     ano_text_input = ObjectProperty()
 
     def reset_list(self):
-        pass
-
-    def update_list(self):
         self.entradas = dbf.SearchLancha('')
         self.lista.clear()
         for entrada in self.entradas:
-            self.lista.append(entrada[0]+' '+str(entrada[2]))
+            self.lista.append(entrada[0] + ' ' + str(entrada[2]))
         self.entry_list.adapter.data = self.lista
         self.entry_list._trigger_reset_populate()
+
+    def entry_details(self):
+        if self.entry_list.adapter.selection:
+            selection = self.entry_list.adapter.selection[0].text
+            print(selection)
+            for entry in self.entradas:
+                if (entry[0]+' '+str(entry[2])) == selection:
+                    popup = SucessPopup()
+                    popup.label_text = entry[1]
+                    popup.open()
+                    break
+            self.entry_list._trigger_reset_populate()
+            self.dia_text_input.text = ''
+            self.mes_text_input.text = ''
+            self.ano_text_input.text = ''
 
     def delete_entry(self):#está ok, por enquanto
         if self.entry_list.adapter.selection:
