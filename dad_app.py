@@ -6,6 +6,7 @@ from datetime import date, datetime
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.core.window import Window
+from kivy.utils import platform
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
@@ -84,27 +85,19 @@ Builder.load_string('''
         Button:
             text: "Tela de Insercao"
             on_press:
-                root.manager.transition.direction = 'left'
-                root.manager.transition.duration = 1
                 root.manager.current = 'screen_two'
         Button:
             text: "Tela de Pesquisa"
             on_press:
-                root.manager.transition.direction = 'left'
-                root.manager.transition.duration = 1
                 root.manager.current = 'screen_three'
         Button:
             text: "Apagar/Alterar"
             on_press:
-                root.manager.transition.direction = 'left'
-                root.manager.transition.duration = 1
                 root.manager.current = 'screen_five'
 
         Button:
             text: "Tela 4"
             on_press:
-                root.manager.transition.direction = 'left'
-                root.manager.transition.duration =  1
                 root.manager.current = 'screen_four'
 
 <ScreenTwo>:
@@ -188,13 +181,6 @@ Builder.load_string('''
                 text: "Adicionar"
                 size: self.texture_size
                 on_press: root.InsertButton()
-            Button:
-                text: "Voltar"
-                size: self.texture_size
-                on_press:
-                    root.manager.transition.direction = 'right'
-                    root.manager.transition.duration =  1
-                    root.manager.current = 'screen_one'
 
 <ScreenThree>:
     dia_input: input_dia
@@ -260,13 +246,6 @@ Builder.load_string('''
                 group: "search_opt"
                 value: root.opt2
                 on_active: root.search_data(self, self.active)
-        Button:
-            text: "Voltar"
-            size: self.texture_size
-            on_press:
-                root.manager.transition.direction = 'right'
-                root.manager.transition.duration =  1
-                root.manager.current = 'screen_one'
 
 <ScreenFour>:
     dia_text_input: dia
@@ -320,13 +299,6 @@ Builder.load_string('''
             id: entry_list
             adapter:
                 ListAdapter(data=root.list, cls = ListItemButton)
-        Button:
-            text: "Voltar"
-            size: self.texture_size
-            on_press:
-                root.manager.transition.direction = 'right'
-                root.manager.transition.duration =  1
-                root.manager.current = 'screen_one'
 
 <ScreenFive>:
     BoxLayout:
@@ -337,15 +309,6 @@ Builder.load_string('''
             text: "Enviar pro email"
             size: self.texture_size
             on_press: root.sendTE()
-
-
-        Button:
-            text: "Voltar"
-            size: self.texture_size
-            on_press:
-                root.manager.transition.direction = 'right'
-                root.manager.transition.duration =  1
-                root.manager.current = 'screen_one'
 ''')
 
 class SucessPopup(Popup):
@@ -475,7 +438,7 @@ class ScreenFour(Screen):
             print(selection)
             for entry in self.entradas:
                 if (entry[0]+' '+str(entry[2])) == selection:
-                    popup = SucessPopup()
+                    popup = InfoPopup()
                     popup.label_text = entry[1]
                     popup.open()
                     break
@@ -504,19 +467,30 @@ class ScreenFive(Screen):
         dbf.SendToEmail()
         dbf.DeleteAfterLimit()
 
-screen_manager = ScreenManager()
-screen_manager.add_widget(ScreenOne(name="screen_one"))
-screen_manager.add_widget(ScreenTwo(name="screen_two"))
-screen_manager.add_widget(ScreenThree(name="screen_three"))
-screen_manager.add_widget(ScreenFour(name="screen_four"))
-screen_manager.add_widget(ScreenFive(name="screen_five"))
-
-
 class TheApp(App):
+    manager = ObjectProperty()
+
+    screen_manager = ScreenManager()
+    screen_manager.add_widget(ScreenOne(name="screen_one"))
+    screen_manager.add_widget(ScreenTwo(name="screen_two"))
+    screen_manager.add_widget(ScreenThree(name="screen_three"))
+    screen_manager.add_widget(ScreenFour(name="screen_four"))
+    screen_manager.add_widget(ScreenFive(name="screen_five"))
+
+
     def build(self):
         Window.clearcolor = (0.5, 0.5, 0.5, 1)
         Window.softinput_mode = 'below_target'
-        return screen_manager
+        Window.bind(on_keyboard=self.onBackBtn)
+        return self.screen_manager
+
+    def onBackBtn(self, window, key, *args):
+        if key == 27:
+            if not self.screen_manager.current == 'screen_one':
+                self.screen_manager.current = 'screen_one'
+                return True
+            else:
+                return False
 
 theapp = TheApp()
 theapp.run()
